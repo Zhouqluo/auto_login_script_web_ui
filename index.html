@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Login 脚本配置生成器 v6.0 (Vue 重写)</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAC6klEQVR4AexazVqDMBAMPolw6l3vtk9W+2TFu957Up9EnIlJRTBAfmox2X6MgbDZZGY3IfB5owr/iQCFJ4CSDJAMKFwBmQKFJ4AsgjIFZAoUrsBoCtxu7rc5YxjvkQCV6vbAMVPsZwUYGuR+PcoAS7hS1eHt9FLlAHKxvIalU4ChYa7XIkCukV3KSzJgqVK52kkGpIys3UE2m/tHIqXvS/lKlgH15u68e+ywmyRQ1zUQ41KDT+E3iQA1yGMwW4BHazYeLS8oRLNiEaIFMOQ0+U5VO+wcd6+n50eWRghFETg9KMgcaEefMaCPuX7s/WgBQO6Bzkj2/fSso85rgkKg/FGH68kDL2F7+IzCZAeDm9ECwJ+O/odSvxKFME8KPxJDMXsYe/qKwWw/1iCFAByo9ecsDTHnfXuDWcPpE4NhJlrfv5UpBNB+XRFmOtPAlSG8d01EC4CF72AIbLlw2QWIZf31dODt1icqbPBXiBbAENPTgNFGJhxBvGMJEnp96ImEqr895nqLEqAXZU3U1RnFaBbuBWpkDdAtgas/n/pgAUiexNCZJd8i0jsCC1jFEgvfgYCN3guA1JHna0KwAIY8uWjiIL3jdCBYyZIrOmFFQP12TgQIdwC0kHMl/EUfQQI0vXS2xKdGQhFIxtjoz+7mfFRQuKUYNQ6oCBKAix376kWWl5MgKWuP7Bl9np5sfMGb3gL0ot8ysj5j69lPZoGPz1hbbwEQfbv311vcgAHoR2ZAu4s08RYAo9CrfuzObi3TIEQAaKD4jwV658cp4QPdeEV/vATgs9+OHVMh6JUV7XUG9UqcXu/wEsAMk3M4FYzL6xVeAvBRxud+KlyP9nfPXgJ8N8vnTATIJ5ZhTLLLAF8ZRACXYnzO15u7RR8m1m5HLi6ekgFDZfDevviDBGwXfbhYkZ39gHumPcoAbnZyxpm5ORkJYOqLKUSAYkLtICoZ4BCmmGrJgGJC7SAqGeAQpphqyYD/HurY8X8CAAD//8sDbscAAAAGSURBVAMAm8UrvYjnazgAAAAASUVORK5CYII=">
+    <script src="./assets/lib/tailwind.cdn.js"></script>
+    <script src="./assets/lib/vue.global.prod.js"></script>
+    <link rel="stylesheet" href="./assets/fontawesome-6.4.0/css/all.min.css">
+    <style>
+        [v-cloak] { display: none !important; }
+        .line-numbered-textarea {
+            display: grid;
+            grid-template-columns: 24px 1fr;
+            border: 1px solid rgb(209 213 219);
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            background-color: #fff;
+        }
+        .line-numbers {
+            background-color: #f7f7f9;
+            color: #a0a0a0;
+            padding: 8px 0;
+            text-align: right;
+            border-right: 1px solid #eee;
+            user-select: none;
+            overflow: hidden;
+        }
+        .line-numbers div { padding-right: 6px; }
+        .url-input {
+            padding: 8px 10px;
+            border: none;
+            resize: none;
+            outline: none;
+            height: 110px;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f0f4f8; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .resizer { width: 6px; cursor: col-resize; }
+        .input-std {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .input-std:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        .label-std {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen flex flex-col overflow-hidden">
+<div id="app" v-cloak class="h-full flex flex-col">
+    <header class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shadow-lg z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-300">
+                <i class="fa-solid fa-magic-wand-sparkles"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-gray-800 tracking-tight">Auto Login Configurator</h1>
+                <p class="text-[10px] text-gray-500 font-medium">Tampermonkey 自动登录脚本配置工具 v6.0 (Vue)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <input type="file" ref="fileInput" @change="handleImport" class="hidden" accept=".json">
+
+            <div class="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+                <button @click="triggerImport" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-indigo-700 hover:bg-white rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-import text-orange-500"></i> 导入配置
+                </button>
+                <div class="w-px bg-gray-300 my-1 mx-1"></div>
+                <button @click="exportConfig" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-indigo-700 hover:bg-white rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-export text-teal-600"></i> 导出配置
+                </button>
+            </div>
+
+            <button @click="resetToDefault" class="text-gray-400 hover:text-red-500 text-sm" title="重置为默认示例">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            
+            <button @click="generateScript" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-400 transition flex items-center gap-2 font-bold text-sm">
+                <i class="fa-solid fa-code"></i> 生成脚本
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden min-h-0" @pointermove.window="isResizing && onResize($event)" @pointerup.window="isResizing = false">
+        <div class="h-full flex transition-all duration-200 relative" :style="overviewOpen ? 'width:' + sidebarWidth + 'px' : 'width: 40px'">
+            <button @click="overviewOpen = !overviewOpen" class="absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-300 transform p-1 bg-gray-700 text-white rounded-full shadow-lg hover:bg-indigo-600"
+                :style="overviewOpen ? 'left:' + sidebarWidth + 'px' : 'left:0px'" 
+                :class="overviewOpen ? '-translate-x-1/2' : 'translate-x-1/2'">
+                <i class="fa-solid" :class="overviewOpen ? 'fa-angles-left' : 'fa-angles-right'"></i>
+            </button>
+            
+            <div v-show="overviewOpen"
+                 class="h-full bg-gray-800 text-white flex flex-col overflow-y-auto p-4 border-r border-gray-700 w-full relative">
+                <h3 class="font-bold text-sm uppercase tracking-wide mb-3 text-indigo-400 border-b border-gray-700 pb-2"><i class="fa-solid fa-layer-group mr-2"></i> DOM 策略组 ({{ groups.length }})</h3>
+                
+                <div class="space-y-1 mb-6">
+                    <button @click="addGroup" class="w-full text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg shadow-md transition font-medium mb-2">
+                        <i class="fa-solid fa-plus mr-1"></i> 添加新策略组
+                    </button>
+                    
+                    <div v-for="(group, i) in groups" :key="group.key"
+                         @click="selectGroup(i)"
+                         class="flex justify-between items-center p-2 rounded-lg cursor-pointer transition"
+                         :class="selectedGroupIndex === i ? 'bg-indigo-600 hover:bg-indigo-700 shadow-lg text-white' : 'hover:bg-gray-700 text-gray-300'">
+                        <span class="font-mono text-sm truncate">{{ group.name }}</span>
+                        <span class="text-xs font-semibold rounded-full px-2 py-0.5"
+                              :class="selectedGroupIndex === i ? 'bg-indigo-700 text-indigo-200' : 'bg-gray-600 text-gray-400'">{{ group.sites.length }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-gray-700 text-[10px] text-gray-500 space-y-1">
+                    <p>选中策略组: <span class="font-mono text-indigo-400">{{ selectedGroup ? selectedGroup.name : '无' }}</span></p>
+                    <p>规则总数: <span class="font-bold text-gray-300">{{ totalSites }}</span></p>
+                    <p class="text-gray-500/80 mt-2">copyright@2025 liusen</p>
+                </div>
+                <div class="absolute top-0 right-0 h-full resizer bg-indigo-400/20 hover:bg-indigo-400/40 transition" @pointerdown.prevent="startResize($event)"></div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex overflow-hidden min-h-0">
+        <div class="flex-1 flex flex-col bg-white overflow-hidden min-h-0">
+            <div v-if="selectedGroup" class="flex-1 flex flex-col min-h-0">
+                <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center sticky top-0 z-10">
+                    <h2 class="font-bold text-xl text-indigo-700"><i class="fa-solid fa-pen-to-square mr-2"></i> 编辑策略组: <span>{{ selectedGroup.name }}</span></h2>
+                    <div class="flex items-center gap-3">
+                        <button @click="removeGroup(selectedGroupIndex)" class="text-sm bg-red-50 border border-red-200 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-lg shadow-sm transition font-medium">
+                            <i class="fa-solid fa-trash-can mr-1"></i> 删除策略组
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                        <div class="space-y-1">
+                            <p class="text-xs text-indigo-600 font-semibold tracking-wide">快速概览</p>
+                            <div class="flex items-center gap-3 text-sm text-indigo-900 font-semibold">
+                                <span class="flex items-center gap-1 bg-white px-3 py-1 rounded-lg shadow-inner border border-indigo-100">
+                                    <i class="fa-solid fa-layer-group text-indigo-500"></i>
+                                    策略组 <span class="font-mono">{{ selectedGroup.name }}</span>
+                                </span>
+                                <span class="flex items-center gap-1 bg-white px-3 py-1 rounded-lg shadow-inner border border-indigo-100">
+                                    <i class="fa-solid fa-sitemap text-emerald-500"></i>
+                                    站点规则 <span class="font-bold">{{ selectedGroup.sites.length }}</span> 条
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="addSiteRule" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition font-semibold">
+                                <i class="fa-solid fa-plus mr-1"></i> 快速添加规则
+                            </button>
+                            <button @click="clearSites" class="text-xs bg-white border border-gray-200 hover:border-red-200 hover:text-red-600 px-3 py-1.5 rounded-lg transition flex items-center gap-1 text-gray-600">
+                                <i class="fa-solid fa-broom"></i> 清空站点
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-lg shadow-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <label class="label-std mb-0">策略组名称 (Key)</label>
+                                <span class="text-[10px] text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full">低频配置</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-[11px] text-gray-500">
+                                <span class="px-2 py-1 bg-gray-100 border border-gray-200 rounded-lg">已填 DOM {{ domFilledCount }}/{{ domFieldMeta.length }}</span>
+                                <button @click="domExpanded = !domExpanded" class="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-xs">
+                                    <i class="fa-solid" :class="domExpanded ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    <span>{{ domExpanded ? '收起组配置' : '展开组配置' }}</span>
+                                </button>
+                            </div>
+                        </div>
+                         <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="col-span-2 sm:col-span-1">
+                                <input type="text" v-model="selectedGroup.name" 
+                                    class="input-std font-mono bg-indigo-50 border-indigo-200 focus:ring-indigo-500" 
+                                    placeholder="e.g. nacos_admin"
+                                    @input="selectedGroup.name = selectedGroup.name.replace(/[^a-zA-Z0-9_]/g, '')"
+                                    :class="!isGroupNameUnique(selectedGroup.name, selectedGroupIndex) ? 'border-red-500' : ''">
+                                <p v-if="!isGroupNameUnique(selectedGroup.name, selectedGroupIndex)" class="text-[10px] text-red-500 mt-1">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> 组名必须唯一且非空 (仅支持字母、数字、下划线)！
+                                </p>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1 text-[11px] text-gray-500 flex items-center">
+                                <span class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-lg w-full text-center">组配置改一次即可，主要时间在站点规则。</span>
+                            </div>
+                        </div>
+                        
+                        <div v-show="domExpanded" class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div v-for="field in domFieldMeta" :key="field.key" class="relative">
+                                    <div class="flex items-center justify-between">
+                                        <label class="label-std capitalize text-gray-600 flex items-center gap-1">
+                                            <i class="fa-solid" :class="field.icon"></i>
+                                            <span>{{ field.label }}</span>
+                                        </label>
+                                        <span class="text-[10px] text-gray-400">{{ field.tip }}</span>
+                                    </div>
+                                    <input type="text" v-model="selectedGroup.dom[field.key]" 
+                                        class="input-std font-mono text-xs" 
+                                        :placeholder="field.placeholder">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-emerald-300 rounded-xl p-4 shadow-lg shadow-emerald-100">
+                         <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
+                            <div>
+                                <h3 class="font-bold text-sm text-emerald-700">站点规则 ({{ selectedGroup.sites.length }})</h3>
+                                <p class="text-[11px] text-gray-500">折叠卡片、显示匹配条数，支持一键复制。</p>
+                            </div>
+                            <button @click="addSiteRule" class="text-xs bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg shadow-sm transition font-medium">
+                                <i class="fa-solid fa-plus mr-1"></i> 添加规则
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div v-for="(site, ruleIndex) in selectedGroup.sites" :key="ruleIndex"
+                                 class="bg-gray-50 border border-gray-200 rounded-xl p-4 group hover:ring-2 hover:ring-emerald-100 transition duration-200">
+
+                                    <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="site._ui.expanded = !site._ui.expanded" class="text-xs text-gray-600 hover:text-indigo-600 transition flex items-center gap-1">
+                                            <i class="fa-solid" :class="site._ui.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                                            <span class="font-semibold">规则 #{{ ruleIndex + 1 }}</span>
+                                        </button>
+                                        <span class="text-[11px] text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
+                                            匹配 <span class="font-bold">{{ getUrlLines(site).length || 1 }}</span> 条
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="site.matchStr = cleanAndFormatUrls(site.matchStr)" 
+                                                class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium py-1 px-2 rounded hover:bg-indigo-50 z-10">
+                                            <i class="fa-solid fa-scissors mr-1"></i> 格式化 URL
+                                        </button>
+                                        <button type="button" @click="duplicateRule(ruleIndex)"
+                                                class="text-[10px] text-gray-600 hover:text-indigo-600 font-medium py-1 px-2 rounded hover:bg-indigo-50 z-10">
+                                            <i class="fa-solid fa-clone mr-1"></i> 复制规则
+                                        </button>
+                                        <button type="button" @click="promptDeleteRule(ruleIndex)"
+                                                class="text-[10px] text-red-600 hover:text-red-700 font-medium py-1 px-2 rounded hover:bg-red-50 z-10 flex items-center gap-1">
+                                            <i class="fa-solid fa-trash-can"></i> 删除
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div v-if="site._ui.confirmingDelete" class="mt-2 p-2 rounded-lg bg-red-50 border border-red-200 text-[12px] text-red-700 flex items-center justify-between">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                        确认删除该站点规则？
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="confirmDeleteRule(ruleIndex)" class="px-2 py-1 bg-red-600 text-white rounded-md text-[11px] hover:bg-red-700">删除</button>
+                                        <button type="button" @click="cancelDeleteRule(ruleIndex)" class="px-2 py-1 bg-white border border-gray-200 rounded-md text-[11px] hover:bg-gray-50">取消</button>
+                                    </div>
+                                </div>
+
+                                <div v-show="site._ui.expanded" class="space-y-3">
+                                    <div>
+                                        <label class="label-std flex items-center justify-between">
+                                            <span>匹配网址 (每行一个，使用包含匹配)</span>
+                                        </label>
+                                        
+                                        <div class="line-numbered-textarea">
+                                            <div class="line-numbers">
+                                                <div v-for="i in getUrlLines(site).length || 1" :key="i">{{ i }}</div>
+                                            </div>
+                                            <textarea v-model="site.matchStr" 
+                                                    class="url-input custom-scroll"
+                                                    placeholder="e.g. mysystem.com/login&#10;192.168.1.100:8080"></textarea>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 mt-1 italic">提示: 脚本使用 `location.href.includes(m)` 进行匹配。</p>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="label-std">用户名</label>
+                                            <input type="text" v-model="site.username" class="input-std" placeholder="Username / 账号">
+                                        </div>
+                                        <div>
+                                            <label class="label-std">密码</label>
+                                            <div class="relative">
+                                                <input :type="site._ui.showPass ? 'text' : 'password'" v-model="site.password" class="input-std pr-10" placeholder="Password / 密码">
+                                                <button type="button" @click="site._ui.showPass = !site._ui.showPass" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-indigo-500 transition">
+                                                    <i class="fa-solid" :class="site._ui.showPass ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="selectedGroup.sites.length === 0" class="text-center text-gray-400 py-6 text-sm bg-gray-50 border border-dashed rounded-lg">
+                                点击 <strong class="text-indigo-500">添加规则</strong> 按钮来为 <span class="font-bold text-indigo-500">{{ selectedGroup.name }}</span> 添加登录规则。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="flex-1 flex flex-col justify-center items-center text-gray-400 text-lg">
+                <i class="fa-solid fa-magnifying-glass-chart text-6xl mb-4 text-indigo-300"></i>
+                <p class="font-semibold">请在左侧选择或创建一个策略组进行配置。</p>
+            </div>
+        </div>
+
+        <div v-show="showPreview" class="w-[35%] flex flex-col bg-gray-900 text-gray-300 border-l border-gray-700">
+             <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
+                <h2 class="font-bold text-sm text-gray-100 uppercase tracking-wide flex items-center gap-2"><i class="fa-solid fa-terminal"></i>生成脚本预览</h2>
+                <button @click="copyToClipboard" v-show="generatedCode" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-md">
+                    <i class="fa-regular fa-copy mr-1"></i> 复制全部
+                </button>
+                <button @click="showPreview = false" class="ml-2 text-xs text-gray-300 hover:text-white px-2 py-1 rounded-md hover:bg-gray-700 transition flex items-center gap-1">
+                    <i class="fa-solid fa-angle-right"></i> 收起
+                </button>
+            </div>
+            <div class="flex-1 relative overflow-hidden">
+                <textarea readonly v-model="generatedCode" class="w-full h-full bg-[#1e1e1e] text-xs font-mono p-4 resize-none outline-none text-emerald-400 leading-relaxed custom-scroll" placeholder="// 点击“生成脚本”按钮，配置将在这里显示..."></textarea>
+                
+                <div v-show="showToast" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl border border-gray-600 flex items-center gap-3 z-50">
+                    <i class="fa-solid fa-check-circle text-emerald-500 text-lg"></i>
+                    <span class="font-medium">{{ toastMessage }}</span>
+                </div>
+            </div>
+        </div>
+        <div v-show="!showPreview" class="w-10 flex items-center justify-center text-gray-300 text-xs bg-gray-800/30 border-l border-gray-200">
+            <button @click="generatedCode ? showPreview = true : generateScript()" class="rotate-90 whitespace-nowrap text-gray-400 hover:text-white flex items-center gap-1">
+                <i class="fa-solid fa-code"></i>
+                <span v-if="generatedCode">展开预览</span>
+                <span v-else>生成并预览</span>
+            </button>
+        </div>
+        </div>
+    </main>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            overviewOpen: true,
+            sidebarWidth: 320,
+            minSidebarWidth: 220,
+            maxSidebarWidth: 520,
+            isResizing: false,
+            startX: 0,
+            startWidth: 0,
+            showToast: false,
+            toastMessage: '',
+            generatedCode: '',
+            showPreview: false,
+            selectedGroupIndex: null,
+            domExpanded: false,
+            domFieldMeta: [
+                { key: 'username', label: '用户名 DOM', placeholder: '#input-username / [name="user"]', icon: 'fa-user', tip: '必填' },
+                { key: 'password', label: '密码 DOM', placeholder: '#input-password / [name="pass"]', icon: 'fa-lock', tip: '必填' },
+                { key: 'login', label: '登录按钮 DOM', placeholder: '#login-btn / button[type="submit"]', icon: 'fa-right-to-bracket', tip: '推荐' },
+                { key: 'captchaInput', label: '验证码输入 DOM', placeholder: '#captcha-input (可选，聚焦)', icon: 'fa-shield-halved', tip: '可选' },
+                { key: 'agreement', label: '协议勾选 DOM', placeholder: '#agree-checkbox input (可选)', icon: 'fa-square-check', tip: '可选' }
+            ],
+            groups: [
+                {
+                    name: 'nacos',
+                    key: Date.now() + 1,
+                    dom: {
+                        username: '#username',
+                        password: '#password',
+                        login: '#root button.next-btn-primary', 
+                        captchaInput: '',
+                        agreement: ''
+                    },
+                    sites: [
+                        { matchStr: '127.0.0.1:8848/nacos/#/login', username: 'nacos', password: 'xxxxxxx', _ui: { showPass: false, expanded: true } }
+                    ]
+                }
+            ]
+        };
+    },
+    computed: {
+        selectedGroup() {
+            return this.selectedGroupIndex !== null ? this.groups[this.selectedGroupIndex] : null;
+        },
+        totalSites() {
+            return this.groups.reduce((sum, group) => sum + group.sites.length, 0);
+        },
+        domFilledCount() {
+            if (!this.selectedGroup) return 0;
+            return Object.values(this.selectedGroup.dom || {}).filter(v => v && v.trim() !== '').length;
+        }
+    },
+    methods: {
+        domTemplate() {
+            return {
+                username: '',
+                password: '',
+                login: '',
+                captchaInput: '',
+                agreement: ''
+            };
+        },
+        getDefaultGroups() {
+            return [
+                {
+                    name: 'nacos',
+                    key: Date.now() + 1,
+                    dom: {
+                        username: '#username',
+                        password: '#password',
+                        login: '#root button.next-btn-primary', 
+                        captchaInput: '',
+                        agreement: ''
+                    },
+                    sites: [
+                        { matchStr: '127.0.0.1:8848/nacos/#/login\n10.0.0.100/nacos', username: 'nacos', password: 'xxxxxxx', _ui: { showPass: false, expanded: true } }
+                    ]
+                }
+            ];
+        },
+        normalizeDom(dom = {}) {
+            return { ...this.domTemplate(), ...dom };
+        },
+        ensureRuleUi(site) {
+            if (!site._ui) site._ui = { showPass: false, expanded: true, confirmingDelete: false };
+            return site;
+        },
+        loadFromLocal() {
+            try {
+                const raw = localStorage.getItem('autoLoginConfigV6');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (!Array.isArray(data.groups)) return;
+                this.groups = data.groups.map(g => ({
+                    name: g.name || 'imported_group',
+                    key: g.key || Date.now() + Math.random(),
+                    dom: this.normalizeDom(g.dom || {}),
+                    sites: (g.sites || []).map(s => this.ensureRuleUi({
+                        matchStr: s.matchStr || '',
+                        username: s.username || '',
+                        password: s.password || ''
+                    }))
+                }));
+                this.selectedGroupIndex = this.groups.length ? 0 : null;
+            } catch (e) {
+                console.warn('Failed to load local config', e);
+            }
+        },
+        persistConfig() {
+            try {
+                const payload = {
+                    groups: this.groups.map(g => ({
+                        name: g.name,
+                        key: g.key,
+                        dom: g.dom,
+                        sites: g.sites.map(s => ({
+                            matchStr: s.matchStr,
+                            username: s.username,
+                            password: s.password,
+                            _ui: s._ui
+                        }))
+                    }))
+                };
+                localStorage.setItem('autoLoginConfigV6', JSON.stringify(payload));
+            } catch (e) {
+                console.warn('Failed to persist config', e);
+            }
+        },
+        startResize(event) {
+            this.isResizing = true;
+            this.startX = event.clientX;
+            this.startWidth = this.sidebarWidth;
+        },
+        onResize(event) {
+            const delta = event.clientX - this.startX;
+            const next = Math.min(this.maxSidebarWidth, Math.max(this.minSidebarWidth, this.startWidth + delta));
+            this.sidebarWidth = next;
+        },
+        selectGroup(index) {
+            this.selectedGroupIndex = index;
+        },
+        isGroupNameUnique(name, currentIndex) {
+            if (!name || name.trim() === '') return false;
+            const otherGroups = this.groups.filter((g, i) => i !== currentIndex);
+            return !otherGroups.some(g => g.name === name);
+        },
+        cleanAndFormatUrls(urlListStr) {
+            const safeStr = (urlListStr || '').toString();
+            return safeStr
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .map(line => line.replace(/^https?:\/\//, '').replace(/\/+$/, '').trim())
+                .join('\n');
+        },
+        cleanDomSelector(key) {
+            if (!this.selectedGroup) return;
+            const current = this.selectedGroup.dom[key] || '';
+            this.selectedGroup.dom[key] = current.replace(/['"]/g, '').trim();
+        },
+        getUrlLines(site) {
+            return (site.matchStr || '').split('\n').filter(l => l.trim() !== '');
+        },
+        showToastMsg(msg) {
+            this.toastMessage = msg;
+            this.showToast = true;
+            setTimeout(() => this.showToast = false, 1800);
+        },
+        addGroup() {
+            const newGroup = {
+                name: 'new_group_' + (this.groups.length + 1),
+                key: Date.now(),
+                dom: this.domTemplate(),
+                sites: []
+            };
+            this.groups.push(newGroup);
+            this.selectedGroupIndex = this.groups.length - 1;
+        },
+        removeGroup(index) {
+            if(confirm('确定删除策略组 ' + this.groups[index].name + ' 及其下的所有站点规则吗？')) {
+                this.groups.splice(index, 1);
+                this.selectedGroupIndex = null;
+            }
+        },
+        addSiteRule() {
+            if (this.selectedGroup) {
+                this.selectedGroup.sites.push(this.ensureRuleUi({
+                    matchStr: '',
+                    username: '',
+                    password: ''
+                }));
+            }
+        },
+        removeSiteRule(ruleIndex) {
+            if (this.selectedGroup && confirm('确定删除此站点规则吗？')) {
+                this.selectedGroup.sites.splice(ruleIndex, 1);
+            }
+        },
+        duplicateRule(ruleIndex) {
+            if (!this.selectedGroup) return;
+            const clone = JSON.parse(JSON.stringify(this.selectedGroup.sites[ruleIndex]));
+            this.ensureRuleUi(clone);
+            this.selectedGroup.sites.splice(ruleIndex + 1, 0, clone);
+        },
+        promptDeleteRule(ruleIndex) {
+            if (!this.selectedGroup) return;
+            this.selectedGroup.sites.forEach((s, idx) => {
+                this.ensureRuleUi(s);
+                s._ui.confirmingDelete = idx === ruleIndex;
+            });
+        },
+        cancelDeleteRule(ruleIndex) {
+            if (!this.selectedGroup) return;
+            const rule = this.selectedGroup.sites[ruleIndex];
+            if (rule && rule._ui) rule._ui.confirmingDelete = false;
+        },
+        confirmDeleteRule(ruleIndex) {
+            if (!this.selectedGroup) return;
+            this.selectedGroup.sites.splice(ruleIndex, 1);
+            this.showToastMsg('已删除站点规则');
+        },
+        clearSites() {
+            if (this.selectedGroup && confirm('确定清空该策略组的所有站点规则吗？')) {
+                this.selectedGroup.sites = [];
+            }
+        },
+        resetToDefault() {
+            if(!confirm('重置将丢失当前编辑内容，确定吗？')) return;
+            localStorage.removeItem('autoLoginConfigV6');
+            this.groups = this.getDefaultGroups();
+            this.selectedGroupIndex = this.groups.length ? 0 : null;
+            this.generatedCode = '';
+            this.showPreview = false;
+            this.toastMessage = '';
+            this.showToastMsg('已恢复默认示例');
+        },
+        exportConfig() {
+            this.generateScript();
+            const data = {
+                version: '6.0',
+                timestamp: new Date().toISOString(),
+                groups: this.groups.map(g => ({
+                    name: g.name,
+                    dom: g.dom,
+                    sites: g.sites.map(({ matchStr, username, password }) => ({ matchStr, username, password }))
+                }))
+            };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `auto_login_config_v6_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showToastMsg('配置已导出！');
+            this.persistConfig();
+        },
+        triggerImport() {
+            this.$refs.fileInput.click();
+        },
+        handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data.groups) && confirm('导入将覆盖当前所有配置，确定吗？')) {
+                        const newGroups = data.groups.map(g => {
+                            const sitesData = g.sites || []; 
+                            return {
+                                name: g.name || 'imported_group',
+                                key: Date.now() + Math.random(),
+                                dom: this.normalizeDom(g.dom || {}),
+                                sites: sitesData.map(s => this.ensureRuleUi({
+                                    matchStr: s.matchStr || (Array.isArray(s.match) ? s.match.join('\n') : ''),
+                                    username: s.username || '',
+                                    password: s.password || ''
+                                }))
+                            };
+                        });
+
+                        if (data.sites && Array.isArray(data.sites)) {
+                            alert('检测到旧版配置结构。旧版站点的 DOM 策略组关联将被合并到对应的新策略组中。');
+                            data.sites.forEach(oldSite => {
+                                let targetGroup = newGroups.find(g => g.name === oldSite.group);
+                                if (targetGroup) {
+                                    targetGroup.sites.push(this.ensureRuleUi({
+                                        matchStr: oldSite.matchStr || (Array.isArray(oldSite.match) ? oldSite.match.join('\n') : ''),
+                                        username: oldSite.username || '',
+                                        password: oldSite.password || ''
+                                    }));
+                                } else {
+                                    const newGroup = {
+                                        name: oldSite.group || 'unknown_imported_group',
+                                        key: Date.now() + Math.random(),
+                                        dom: this.domTemplate(),
+                                        sites: [this.ensureRuleUi({
+                                            matchStr: oldSite.matchStr || (Array.isArray(oldSite.match) ? oldSite.match.join('\n') : ''),
+                                            username: oldSite.username || '',
+                                            password: oldSite.password || ''
+                                        })]
+                                    };
+                                    newGroups.push(newGroup);
+                                }
+                            });
+                        }
+
+                        this.groups = newGroups;
+                        this.selectedGroupIndex = null;
+                        this.showToastMsg('配置导入成功！');
+                        this.generatedCode = '';
+                        this.showPreview = false;
+                        this.persistConfig();
+                    } else {
+                        alert('文件格式错误：找不到 groups 数据。');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('无法解析文件，请确保是合法的 JSON 格式。');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        },
+        generateScript() {
+            const configGroup = {};
+            const configSites = [];
+            
+            this.groups.forEach((group, groupIndex) => {
+                if(group.name && this.isGroupNameUnique(group.name, groupIndex)) {
+                    const cleanDom = {};
+                    for (const [key, value] of Object.entries(group.dom)) {
+                        if (value && value.trim() !== '') cleanDom[key] = value.trim();
+                    }
+                    if (Object.keys(cleanDom).length > 0) {
+                        configGroup[group.name] = { dom: cleanDom };
+                    }
+                }
+
+                group.sites.forEach(site => {
+                    const matches = this.cleanAndFormatUrls(site.matchStr).split('\n').filter(line => line.length > 0);
+                    if (matches.length > 0 && site.username && group.name) {
+                        configSites.push({
+                            match: matches,
+                            username: site.username,
+                            password: site.password,
+                            group: group.name
+                        });
+                    }
+                });
+            });
+
+            const finalConfig = { group: configGroup, sites: configSites };
+
+            const template = `// ==UserScript==
+// @name         Auto Login Configurable (Generated v6.0 - Group Driven)
+// @namespace    http://tampermonkey.net/
+// @version      1.3
+// @description  自动填充账号/密码/同意协议
+// @author       Liusen & Tool
+// @match        *://*/*
+// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAC6klEQVR4AexazVqDMBAMPolw6l3vtk9W+2TFu957Up9EnIlJRTBAfmox2X6MgbDZZGY3IfB5owr/iQCFJ4CSDJAMKFwBmQKFJ4AsgjIFZAoUrsBoCtxu7rc5YxjvkQCV6vbAMVPsZwUYGuR+PcoAS7hS1eHt9FLlAHKxvIalU4ChYa7XIkCukV3KSzJgqVK52kkGpIys3UE2m/tHIqXvS/lKlgH15u68e+ywmyRQ1zUQ41KDT+E3iQA1yGMwW4BHazYeLS8oRLNiEaIFMOQ0+U5VO+wcd6+n50eWRghFETg9KMgcaEefMaCPuX7s/WgBQO6Bzkj2/fSso85rgkKg/FGH68kDL2F7+IzCZAeDm9ECwJ+O/odSvxKFME8KPxJDMXsYe/qKwWw/1iCFAByo9ecsDTHnfXuDWcPpE4NhJlrfv5UpBNB+XRFmOtPAlSG8d01EC4CF72AIbLlw2QWIZf31dODt1icqbPBXiBbAENPTgNFGJhxBvGMJEnp96ImEqr895nqLEqAXZU3U1RnFaBbuBWpkDdAtgas/n/pgAUiexNCZJd8i0jsCC1jFEgvfgYCN3guA1JHna0KwAIY8uWjiIL3jdCBYyZIrOmFFQP12TgQIdwC0kHMl/EUfQQI0vXS2xKdGQhFIxtjoz+7mfFRQuKUYNQ6oCBKAix376kWWl5MgKWuP7Bl9np5sfMGb3gL0ot8ysj5j69lPZoGPz1hbbwEQfbv311vcgAHoR2ZAu4s08RYAo9CrfuzObi3TIEQAaKD4jwV658cp4QPdeEV/vATgs9+OHVMh6JUV7XUG9UqcXu/wEsAMk3M4FYzL6xVeAvBRxud+KlyP9nfPXgJ8N8vnTATIJ5ZhTLLLAF8ZRACXYnzO15u7RR8m1m5HLi6ekgFDZfDevviDBGwXfbhYkZ39gHumPcoAbnZyxpm5ORkJYOqLKUSAYkLtICoZ4BCmmGrJgGJC7SAqGeAQpphqyYD/HurY8X8CAAD//8sDbscAAAAGSURBVAMAm8UrvYjnazgAAAAASUVORK5CYII=
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    const config = ${JSON.stringify(finalConfig, null, 4)};
+
+    function setFrameworkInputValue(el, value) {
+        if (!el) return;
+        const nativeSetter = Object.getOwnPropertyDescriptor(el.__proto__, 'value')?.set;
+        if (nativeSetter) nativeSetter.call(el, value);
+        else el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new Event('blur', { bubbles: true }));
+    }
+
+    const log = {
+        formatDate() {
+            const date = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            return date.getFullYear() + '/' + pad(date.getMonth() + 1) + '/' + pad(date.getDate()) + ' ' +
+                   pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+        },
+        info(msg) { console.log(this.formatDate() + ' %c[INFO]%c ' + msg, 'color: black;', 'color: black;'); },
+        debug(msg) { console.log(this.formatDate() + ' %c[DEBUG]%c ' + msg, 'color: #fff; background: #539258;', 'color: black;'); }
+    };
+
+    async function autoFill(site) {
+        if (!config.group[site.group]) {
+            log.info('Group ' + site.group + ' not found configuration or is invalid.');
+            return;
+        }
+        
+        let { username, password, group } = site;
+        let dom = config.group[group].dom;
+        
+        log.debug('命中站点: ' + location.href);
+        log.debug('组: ' + group);
+
+        if (dom.username) {
+            const el = document.querySelector(dom.username);
+            if (el) { log.debug('set username'); setFrameworkInputValue(el, username); }
+        }
+        if (dom.password) {
+            const el = document.querySelector(dom.password);
+            if (el) { log.debug('set password'); setFrameworkInputValue(el, password); }
+        }
+        if (dom.agreement) {
+            const el = document.querySelector(dom.agreement);
+            if (el && el.tagName.toLowerCase() === 'input' && (el.type === 'checkbox' || el.type === 'radio') && !el.checked) {
+                log.debug('set agreement checked'); el.click();
+            }
+        }
+        if (dom.captchaInput) {
+            const el = document.querySelector(dom.captchaInput);
+            if (el) { log.debug('focus on captcha input'); el.focus(); }
+        }
+        if (dom.login) {
+            const el = document.querySelector(dom.login);
+            if (el) { log.debug('trigger login click'); setTimeout(() => el.click(), 200); }
+        }
+    }
+
+    function isMatch(site) {
+        if (Array.isArray(site.match)) return site.match.some(m => location.href.includes(m));
+        return location.href.includes(site.match);
+    }
+
+    function checkSites() {
+        log.info('AutoLogin Check Start');
+        config.sites.forEach(site => { if (isMatch(site)) autoFill(site); });
+    }
+
+    window.addEventListener("load", () => setTimeout(checkSites, 500));
+})();`;
+                    
+            this.generatedCode = template;
+            this.showPreview = true;
+            this.showToastMsg('脚本已生成！');
+            this.persistConfig();
+        },
+        copyToClipboard() {
+            if (!this.generatedCode) {
+                this.showToastMsg('请先点击“生成脚本”按钮。');
+                return;
+            }
+            navigator.clipboard.writeText(this.generatedCode).then(() => {
+                this.showToastMsg('脚本已复制到剪贴板！');
+            });
+        }
+    },
+    mounted() {
+        this.groups.forEach(g => g.sites = g.sites.map(s => this.ensureRuleUi(s)));
+        this.loadFromLocal();
+    },
+    watch: {
+        groups: {
+            handler() {
+                this.persistConfig();
+            },
+            deep: true
+        }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
